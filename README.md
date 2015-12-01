@@ -1,3 +1,6 @@
+# Hope\Di
+Simple and powerful dependency resolver
+
 ### Create container
 
 ```php
@@ -10,7 +13,7 @@ $container = new Hope\Di\Container();
 $container->add('App\Session');
 
 $container->add('session', 'App\Session')
-    ->method('injectStorage', 'App\StorageInterface');
+    ->method('setStorage', 'App\StorageInterface');
 
 $container->add('storage', 'App\Storage')
     ->property('driver', 'mysql');
