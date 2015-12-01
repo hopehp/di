@@ -1,0 +1,27 @@
+{
+    "name": "hope/di",
+    "description": "Hope Framework Di container",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shvorak Alexey",
+            "email": "dr.emerido@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.6"
+    },
+    "autoload": {
+        "psr-4": {
+          "Hope\\Di\\" : "dist/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Hope\\DiTest\\" : "tests/stubs/"
+        }
+    }
+}
