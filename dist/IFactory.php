@@ -32,23 +32,23 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Factory
+     * Interface IFactory
      *
      * @package Hope\Di
      */
-    interface Factory
+    interface IFactory
     {
 
         /**
-         * @param \Hope\Di\Container $container
+         * @param \Hope\Di\IContainer $container
          * @param string             $name
          * @param mixed              $value
          *
          * @throws \InvalidArgumentException
          *
-         * @return \Hope\Di\Definition
+         * @return \Hope\Di\IDefinition
          */
-        public function define(Container $container, $name, $value);
+        public function define(IContainer $container, $name, $value);
 
     }
 

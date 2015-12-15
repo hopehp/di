@@ -31,35 +31,65 @@
 namespace Hope\Di\Resolver
 {
 
-    use Hope\Di\Resolver;
+    use Hope\Di\IResolver;
     use Hope\Di\Container;
-    use Hope\Di\Definition;
+    use Hope\Di\IDefinition;
+    use Hope\Di\Definition\Object;
+    use Hope\Di\Definition\Closure;
 
-    class ReflectionResolver implements Resolver
+    /**
+     * Class ReflectionResolver
+     *
+     * @package Hope\Di\Resolver
+     */
+    class ReflectionResolver implements IResolver
     {
 
         /**
          * Resolve definition dependencies
          *
-         * @param \Hope\Di\Container  $container
-         * @param \Hope\Di\Definition $definition
+         * @param \Hope\Di\Container   $container
+         * @param \Hope\Di\IDefinition $definition
          *
          * @return void
          */
-        public function resolve(Container $container, Definition $definition)
+        public function resolve(Container $container, IDefinition $definition)
         {
             $reflection = $definition->getReflection();
 
-            if ($reflection instanceof \ReflectionClass) {
-                $arguments = array_map(function (\ReflectionParameter $parameter) {
-                    if ($parameter->getClass()) {
-                        return $parameter->getClass()->getName();
+            if ($definition instanceof Object) {
+                // Check reflection instance
+                if ($reflection instanceof \ReflectionClass) {
+                    // Check class constructor
+                    if ($constructor = $reflection->getConstructor()) {
+                        $definition->arguments(
+                            $this->resolveParameters($constructor->getParameters())
+                        );
                     }
-                    return $parameter->getName();
-                }, $reflection->getConstructor()->getParameters());
-
-                $definition->arguments($arguments);
+                }
+            } elseif ($definition instanceof Closure) {
+                // Check reflection instance
+                if ($reflection instanceof \ReflectionFunction) {
+                    $definition->arguments(
+                        $this->resolveParameters($reflection->getParameters())
+                    );
+                }
             }
+        }
+
+        /**
+         * @param \ReflectionParameter[] $parameters
+         *
+         * @return array
+         */
+        protected function resolveParameters(array $parameters)
+        {
+            return array_map(function (\ReflectionParameter $parameter) {
+                if ($parameter->getClass()) {
+                    return $parameter->getClass()->getName();
+                }
+                return $parameter->getName();
+            }, $parameters);
         }
 
     }

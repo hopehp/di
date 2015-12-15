@@ -32,22 +32,40 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Provider
+     * Interface IDefinition
      *
      * @package Hope\Di
-     *
      */
-    interface Provider
+    interface IDefinition
     {
 
         /**
-         * Register services
+         * Returns definition name
          *
-         * @param \Hope\Di\Container $container
-         *
-         * @return void
+         * @return string
          */
-        public function register(Container $container);
+        public function getName();
+
+        /**
+         * Returns definition scope
+         *
+         * @return mixed
+         */
+        public function getScope();
+
+        /**
+         * Returns definition value
+         *
+         * @return mixed
+         */
+        public function getValue();
+
+        /**
+         * Returns definition reflection
+         *
+         * @return \Reflection
+         */
+        public function getReflection();
 
     }
 

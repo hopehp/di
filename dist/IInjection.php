@@ -32,22 +32,19 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Resolver
+     * Interface IInjection
      *
      * @package Hope\Di
      */
-    interface Resolver
+    interface IInjection
     {
 
         /**
-         * Resolve definition dependencies
+         * @param \Hope\Di\IContainer $container
          *
-         * @param \Hope\Di\Container  $container
-         * @param \Hope\Di\Definition $definition
-         *
-         * @return void
+         * @return mixed
          */
-        public function resolve(Container $container, Definition $definition);
+        public function __inject(IContainer $container);
 
     }
 

@@ -32,19 +32,22 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Injectable
+     * Interface IProvider
      *
      * @package Hope\Di
+     *
      */
-    interface Injectable
+    interface IProvider
     {
 
         /**
-         * @param \Hope\Di\ContainerInterface $container
+         * Register services
          *
-         * @return mixed
+         * @param \Hope\Di\Container $container
+         *
+         * @return void
          */
-        public function __inject(ContainerInterface $container);
+        public function register(Container $container);
 
     }
 

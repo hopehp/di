@@ -31,15 +31,16 @@
 namespace Hope\Di
 {
 
-    use Hope\Di\Definition\Object;
-    use Hope\Di\Definition\Closure;
+    use Hope\Di\Factory\SimpleFactory;
+    use Hope\Di\Builder\SimpleBuilder;
+    use Hope\Di\Resolver\SimpleResolver;
 
     /**
      * Class Container
      *
      * @package Hope\Di
      */
-    class Container implements ContainerInterface
+    class Container implements IContainer
     {
 
         /**
@@ -52,21 +53,21 @@ namespace Hope\Di
         /**
          * Definition factory
          *
-         * @var \Hope\Di\Factory
+         * @var \Hope\Di\IFactory
          */
         protected $_factory;
 
         /**
          * Definition builder
          *
-         * @var \Hope\Di\Builder
+         * @var \Hope\Di\IBuilder
          */
         protected $_builder;
 
         /**
          * Definition resolvers
          *
-         * @var \SplObjectStorage|Resolver[]
+         * @var \SplObjectStorage|IResolver[]
          */
         protected $_resolvers;
 
@@ -88,30 +89,30 @@ namespace Hope\Di
         /**
          * Instantiate Container
          *
-         * @param array            $values  [optional]
-         * @param \Hope\Di\Factory $factory
-         * @param \Hope\Di\Builder $builder [optional]
+         * @param array             $values  [optional]
+         * @param \Hope\Di\IFactory $factory
+         * @param \Hope\Di\IBuilder $builder [optional]
          */
-        public function __construct(array $values = [], Factory $factory = null, Builder $builder = null)
+        public function __construct(array $values = [], IFactory $factory = null, IBuilder $builder = null)
         {
             if ($factory === null) {
-                $factory = new Factory\SimpleFactory();
+                $factory = new SimpleFactory();
             }
             // Register factory
             $this->setFactory($factory);
 
             if ($builder === null) {
-                $builder = new Builder\SimpleBuilder();
+                $builder = new SimpleBuilder();
             }
             // Register builder
             $this->setBuilder($builder);
 
             // Register simple resolver
-            $this->setResolver(new Resolver\SimpleResolver());
+            $this->setResolver(new SimpleResolver());
 
             $this->add('container', $this);
             $this->add('Hope\Di\Container', $this);
-            $this->add('Hope\Di\ContainerInterface', $this);
+            $this->add('Hope\Di\IContainer', $this);
         }
 
         /**
@@ -120,7 +121,7 @@ namespace Hope\Di
          * @param $name
          * @param $value
          *
-         * @return Definition|Definition\Object|Definition\Closure
+         * @return IDefinition|Definition\Object|Definition\Closure
          */
         public function add($name, $value = null)
         {
@@ -132,7 +133,7 @@ namespace Hope\Di
                 $this->_instances[$name] = $value;
                 return;
             } else {
-                return $this->_definitions[$name] = $this->_factory->define($this, $name, $value);
+                return $this->_definitions[$name] = $this->getFactory()->define($this, $name, $value);
             }
             throw new \InvalidArgumentException('Can\'t add value to container');
         }
@@ -169,13 +170,30 @@ namespace Hope\Di
         }
 
         /**
+         * @inheritdoc
+         */
+        public function make($class, array $locals)
+        {
+
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public function call(callable $closure, array $locals)
+        {
+
+        }
+
+
+        /**
          * Set definition factory
          *
-         * @param \Hope\Di\Factory $factory
+         * @param \Hope\Di\IFactory $factory
          *
          * @return \Hope\Di\Container
          */
-        public function setFactory(Factory $factory)
+        public function setFactory(IFactory $factory)
         {
             $this->_factory = $factory;
             return $this;
@@ -184,7 +202,7 @@ namespace Hope\Di
         /**
          * Returns definition factory
          *
-         * @return \Hope\Di\Factory
+         * @return \Hope\Di\IFactory
          */
         public function getFactory()
         {
@@ -194,11 +212,11 @@ namespace Hope\Di
         /**
          * Set definitions builder
          *
-         * @param \Hope\Di\Builder $builder
+         * @param \Hope\Di\IBuilder $builder
          *
          * @return \Hope\Di\Container
          */
-        public function setBuilder(Builder $builder)
+        public function setBuilder(IBuilder $builder)
         {
             $this->_builder = $builder;
             return $this;
@@ -207,21 +225,24 @@ namespace Hope\Di
         /**
          * Returns definitions builder
          *
-         * @return \Hope\Di\Builder
+         * @return \Hope\Di\IBuilder
          */
         public function getBuilder()
         {
+            if ($this->_builder === null) {
+                $this->_builder = new SimpleBuilder();
+            }
             return $this->_builder;
         }
 
         /**
          * Set dependency resolver
          *
-         * @param \Hope\Di\Resolver $resolver
+         * @param \Hope\Di\IResolver $resolver
          *
          * @return \Hope\Di\Container
          */
-        public function setResolver(Resolver $resolver)
+        public function setResolver(IResolver $resolver)
         {
             $this->_resolvers = new \SplObjectStorage();
             $this->_resolvers->attach($resolver);
@@ -231,11 +252,11 @@ namespace Hope\Di
         /**
          * Add dependency resolver
          *
-         * @param \Hope\Di\Resolver $resolver
+         * @param \Hope\Di\IResolver $resolver
          *
          * @return \Hope\Di\Container
          */
-        public function addResolver(Resolver $resolver)
+        public function addResolver(IResolver $resolver)
         {
             if ($this->_resolvers->contains($resolver)) {
                 throw new \InvalidArgumentException('Resolver already attached');
@@ -249,7 +270,7 @@ namespace Hope\Di
          *
          * @param string $name
          *
-         * @return Definition
+         * @return IDefinition
          */
         protected function getDefinition($name)
         {
@@ -260,11 +281,11 @@ namespace Hope\Di
         }
 
         /**
-         * @param \Hope\Di\Definition $definition
+         * @param \Hope\Di\IDefinition $definition
          *
          * @return mixed
          */
-        protected function build(Definition $definition)
+        protected function build(IDefinition $definition)
         {
             foreach ($this->_resolvers as $resolver) {
                 $resolver->resolve($this, $definition);

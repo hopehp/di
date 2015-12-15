@@ -32,11 +32,11 @@ namespace Hope\Di
 {
 
     /**
-     * Interface ContainerInterface
+     * Interface IContainer
      *
      * @package Hope\Di
      */
-    interface ContainerInterface
+    interface IContainer
     {
 
         /**
@@ -45,7 +45,7 @@ namespace Hope\Di
          * @param $name
          * @param $value
          *
-         * @return \Hope\Di\ContainerInterface
+         * @return \Hope\Di\IContainer
          */
         public function add($name, $value = null);
 
@@ -61,6 +61,34 @@ namespace Hope\Di
          */
         public function get($name, $throw = true);
 
+        /**
+         * Returns true if service is registered
+         *
+         * @param string $name
+         *
+         * @return bool
+         */
+        public function has($name);
+
+        /**
+         * Make new instance of class
+         *
+         * @param string $class
+         * @param array  $locals
+         *
+         * @return mixed
+         */
+        public function make($class, array $locals);
+
+        /**
+         * Invoke closure in container context
+         *
+         * @param callable $closure
+         * @param array    $locals
+         *
+         * @return mixed
+         */
+        public function call(callable $closure, array $locals);
 
     }
 

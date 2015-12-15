@@ -32,33 +32,22 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Definition
+     * Interface IBuilder
      *
      * @package Hope\Di
      */
-    interface Definition
+    interface IBuilder
     {
 
         /**
-         * Returns definition name
+         * Build definition
          *
-         * @return string
-         */
-        public function getName();
-
-        /**
-         * Returns definition scope
+         * @param \Hope\Di\IContainer   $container
+         * @param \Hope\Di\IDefinition $definition
          *
          * @return mixed
          */
-        public function getScope();
-
-        /**
-         * Returns definition reflection
-         *
-         * @return \Reflection
-         */
-        public function getReflection();
+        public function build(IContainer $container, IDefinition $definition);
 
     }
 

@@ -31,29 +31,31 @@
 namespace Hope\Di\Resolver
 {
 
-    use Hope\Di\Resolver;
+    use Hope\Di\IResolver;
     use Hope\Di\Container;
-    use Hope\Di\Definition;
+    use Hope\Di\IDefinition;
+
+    use Hope\Di\Definition\Closure;
 
     /**
      * Class Base
      *
      * @package Hope\Di\Resolver
      */
-    class SimpleResolver implements Resolver
+    class SimpleResolver implements IResolver
     {
 
         /**
          * Resolve definition dependencies
          *
-         * @param \Hope\Di\Container  $container
-         * @param \Hope\Di\Definition $definition
+         * @param \Hope\Di\Container   $container
+         * @param \Hope\Di\IDefinition $definition
          *
          * @return void
          */
-        public function resolve(Container $container, Definition $definition)
+        public function resolve(Container $container, IDefinition $definition)
         {
-            if ($definition instanceof Definition\Closure && $definition->getArguments() === []) {
+            if ($definition instanceof Closure && $definition->getArguments() === []) {
                 $definition->setArgument(0, $container);
             }
         }

@@ -31,38 +31,43 @@
 namespace Hope\Di\Factory
 {
 
-    use Hope\Di\Factory;
-    use Hope\Di\Container;
-    use Hope\Di\Definition;
+    use Hope\Di\IFactory;
+    use Hope\Di\IContainer;
+    use Hope\Di\IDefinition;
+
+    use Hope\Di\Definition\Object;
+    use Hope\Di\Definition\Closure;
 
     /**
      * Class Base
      *
      * @package Hope\Di\Factory
      */
-    class SimpleFactory implements Factory
+    class SimpleFactory implements IFactory
     {
 
         /**
-         * @param \Hope\Di\Container $container
+         * @param \Hope\Di\IContainer $container
          * @param string             $name
          * @param mixed              $value
          *
          * @throws \InvalidArgumentException
          *
-         * @return \Hope\Di\Definition\Closure|\Hope\Di\Definition\Object
+         * @return IDefinition
          */
-        public function define(Container $container, $name, $value)
+        public function define(IContainer $container, $name, $value)
         {
+            if (is_object($value)) {
+                return new Object($name, get_class($value));
+            }
             if (is_string($value) && class_exists($value)) {
-                return new Definition\Object($name, $value);
+                return new Object($name, $value);
             }
             if (is_callable($value)) {
-                return new Definition\Closure($name, $value);
+                return new Closure($name, $value);
             }
             throw new \InvalidArgumentException('Undefined value type for container definition');
         }
-
 
     }
 

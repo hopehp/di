@@ -31,8 +31,7 @@
 namespace Hope\Di\Definition
 {
 
-    use Less\Error;
-    use Hope\Di\Definition;
+    use Hope\Di\Scope;
 
     /**
      * Class Object
@@ -42,15 +41,19 @@ namespace Hope\Di\Definition
     class Object extends Closure
     {
 
-        use Definition\Mixin\Methods;
-        use Definition\Mixin\Properties;
+        use Mixin\Methods;
+        use Mixin\Properties;
+
+        /**
+         * @var string
+         */
+        protected $_scope = Scope::SINGLETON;
 
         /**
          * Instantiate object definition
          *
          * @param string $name
          * @param string $value
-         *
          * @throws \InvalidArgumentException
          */
         public function __construct($name, $value)

@@ -32,17 +32,17 @@ namespace Hope\Di\Definition
 {
 
     use Hope\Di\Scope;
-    use Hope\Di\Definition;
+    use Hope\Di\IDefinition;
 
     /**
      * Class Closure
      *
      * @package Hope\Di\Definition
      */
-    class Closure implements Definition
+    class Closure implements IDefinition
     {
 
-        use Definition\Mixin\Arguments;
+        use Mixin\Arguments;
 
         /**
          * Definition name
@@ -125,6 +125,17 @@ namespace Hope\Di\Definition
                 $this->_reflection = new \ReflectionFunction($this->_value);
             }
             return $this->_reflection;
+        }
+
+        /**
+         * Set definition scope as singleton
+         *
+         * @return Closure
+         */
+        public function shared()
+        {
+            $this->_scope = Scope::SINGLETON;
+            return $this;
         }
 
     }

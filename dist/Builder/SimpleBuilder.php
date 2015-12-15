@@ -31,34 +31,37 @@
 namespace Hope\Di\Builder
 {
 
-    use Hope\Di\Builder;
-    use Hope\Di\Container;
-    use Hope\Di\Definition;
+    use Hope\Di\IBuilder;
+    use Hope\Di\IContainer;
+    use Hope\Di\IDefinition;
+
+    use Hope\Di\Definition\Object;
+    use Hope\Di\Definition\Closure;
 
     /**
      * Class Base
      *
      * @package Hope\Di\Builder
      */
-    class SimpleBuilder implements Builder
+    class SimpleBuilder implements IBuilder
     {
 
         /**
          * Build definition
          *
-         * @param \Hope\Di\Container  $container
-         * @param \Hope\Di\Definition $definition
+         * @param \Hope\Di\IContainer   $container
+         * @param \Hope\Di\IDefinition $definition
          *
          * @throws \InvalidArgumentException
          *
          * @return mixed
          */
-        public function build(Container $container, Definition $definition)
+        public function build(IContainer $container, IDefinition $definition)
         {
-            if ($definition instanceof Definition\Object) {
+            if ($definition instanceof Object) {
                 return $this->buildObject($container, $definition);
             }
-            if ($definition instanceof Definition\Closure) {
+            if ($definition instanceof Closure) {
                 return $this->buildFactory($container, $definition);
             }
 
@@ -68,31 +71,29 @@ namespace Hope\Di\Builder
         /**
          * Build Object definitions
          *
-         * @param \Hope\Di\Container         $container
+         * @param \Hope\Di\IContainer        $container
          * @param \Hope\Di\Definition\Object $definition
          *
          * @protected
          *
          * @return mixed
          */
-        protected function buildObject(Container $container, Definition\Object $definition)
+        protected function buildObject(IContainer $container, Object $definition)
         {
             $classname = $definition->getValue();
-            $arguments = $this->resolveValue($container, ...$definition->getArguments());
-
-
+            $arguments = $this->resolveValues($container, ...$definition->getArguments());
 
             // Make instance
             $instance = new $classname(...$arguments);
 
             // Fill properties
             foreach ($definition->getProperties() as $name => $value) {
-                $instance->{$name} = $value;
+                $instance->{$name} = $this->resolveValue($container, $value);
             }
 
             // Call methods
             foreach ($definition->getMethods() as $name => $value) {
-                $instance->{$name}(...$this->resolveValue($container, ...$value));
+                $instance->{$name}(...$this->resolveValues($container, ...$value));
             }
 
             return $instance;
@@ -101,34 +102,39 @@ namespace Hope\Di\Builder
         /**
          * Build Closure definition
          *
-         * @param \Hope\Di\Container          $container
+         * @param \Hope\Di\IContainer         $container
          * @param \Hope\Di\Definition\Closure $definition
          *
          * @protected
          *
          * @return mixed
          */
-        protected function buildFactory(Container $container, Definition\Closure $definition)
+        protected function buildFactory(IContainer $container, Closure $definition)
         {
             $callable = $definition->getValue();
             $arguments = $definition->getArguments();
 
-            return $callable(...$this->resolveValue($container, ...$arguments));
+            return $callable(...$this->resolveValues($container, ...$arguments));
 
+        }
+
+        protected function resolveValue(IContainer $container, $name)
+        {
+            return $container->get($name);
         }
 
         /**
          * Resolve dependencies
          *
-         * @param \Hope\Di\Container $container
+         * @param \Hope\Di\IContainer $container
          * @param  mixed              ...$names
          *
          * @return array
          */
-        protected function resolveValue(Container $container, ...$names)
+        protected function resolveValues(IContainer $container, ...$names)
         {
             return array_map(function($name) use ($container) {
-                return $container->has($name) ? $container->get($name) : $name;
+                return $this->resolveValue($container, $name);
             }, $names);
         }
     }

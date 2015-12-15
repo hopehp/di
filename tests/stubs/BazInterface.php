@@ -3,12 +3,12 @@
 namespace Hope\DiTest
 {
 
-    use Hope\Di\ContainerInterface;
+    use Hope\Di\IContainer;
 
     interface BazInterface
     {
 
-        public function __construct(ContainerInterface $container);
+        public function __construct(IContainer $container);
 
     }
 

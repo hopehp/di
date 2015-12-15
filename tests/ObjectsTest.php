@@ -5,7 +5,7 @@ class ObjectsTest extends PHPUnit_Framework_TestCase
 {
 
     /**
-     * @var \Hope\Di\ContainerInterface
+     * @var \Hope\Di\IContainer
      */
     protected $c;
 

@@ -32,22 +32,22 @@ namespace Hope\Di
 {
 
     /**
-     * Interface Builder
+     * Interface IResolver
      *
      * @package Hope\Di
      */
-    interface Builder
+    interface IResolver
     {
 
         /**
-         * Build definition
+         * Resolve definition dependencies
          *
-         * @param \Hope\Di\Container  $container
-         * @param \Hope\Di\Definition $definition
+         * @param \Hope\Di\Container   $container
+         * @param \Hope\Di\IDefinition $definition
          *
-         * @return mixed
+         * @return void
          */
-        public function build(Container $container, Definition $definition);
+        public function resolve(Container $container, IDefinition $definition);
 
     }
 
