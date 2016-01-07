@@ -3,7 +3,7 @@
  * Hope - PHP 5.6 framework
  *
  * @author      Shvorak Alexey <dr.emerido@gmail.com>
- * @copyright   2011 Shvorak Alexey
+ * @copyright   2015 Shvorak Alexey
  * @version     0.1.0
  * @package     Hope
  *
@@ -42,12 +42,12 @@ namespace Hope\Di
         /**
          * Resolve definition dependencies
          *
-         * @param \Hope\Di\Container   $container
+         * @param \Hope\Di\IContainer  $container
          * @param \Hope\Di\IDefinition $definition
          *
          * @return void
          */
-        public function resolve(Container $container, IDefinition $definition);
+        public function resolve(IContainer $container, IDefinition $definition);
 
     }
 

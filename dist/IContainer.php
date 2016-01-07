@@ -47,7 +47,7 @@ namespace Hope\Di
          *
          * @return \Hope\Di\IContainer
          */
-        public function add($name, $value = null);
+        public function set($name, $value);
 
         /**
          * Returns registered value
@@ -70,25 +70,56 @@ namespace Hope\Di
          */
         public function has($name);
 
-        /**
-         * Make new instance of class
-         *
-         * @param string $class
-         * @param array  $locals
-         *
-         * @return mixed
-         */
-        public function make($class, array $locals);
 
         /**
-         * Invoke closure in container context
+         * Build definition
          *
-         * @param callable $closure
-         * @param array    $locals
+         * @param \Hope\Di\IDefinition $definition
          *
          * @return mixed
          */
-        public function call(callable $closure, array $locals);
+        public function build(IDefinition $definition);
+
+        /**
+         * Define service
+         *
+         * @param string $name
+         * @param mixed  $value [optional]
+         *
+         * @return IDefinition
+         */
+        public function define($name, $value = null);
+
+        /**
+         * Create a new container which related to this
+         *
+         * @return \Hope\Di\IContainer
+         */
+        public function isolate();
+
+        /**
+         * Returns `true` if the container is isolated
+         *
+         * @return bool
+         */
+        public function isolated();
+
+        /**
+         * Register values in provider
+         *
+         * @param \Hope\Di\IProvider $provider
+         *
+         * @return \Hope\Di\IContainer
+         */
+        public function register(IProvider $provider);
+
+        /**
+         * Returns definitions factory
+         *
+         * @return \Hope\Di\IFactory
+         */
+        public function getFactory();
+
 
     }
 

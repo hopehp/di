@@ -32,15 +32,28 @@ namespace Hope\Di
 {
 
     /**
-     * Class Scope
+     * Interface IContainerAware
      *
      * @package Hope\Di
      */
-    class Scope
+    interface IContainerAware
     {
 
-        const SINGLETON = 'singleton';
-        const PROTOTYPE = 'prototype';
+        /**
+         * Set dependencies container
+         *
+         * @param \Hope\Di\IContainer $container
+         *
+         * @return static
+         */
+        public function setContainer(IContainer $container);
+
+        /**
+         * Returns dependencies container
+         *
+         * @return \Hope\Di\IContainer
+         */
+        public function getContainer();
 
     }
 

@@ -10,9 +10,11 @@ namespace Hope\DiTest
 
         public $_foo;
 
+        public $_test;
+
         public function __construct(IContainer $container)
         {
-            $this->_foo = $container->get(\Hope\DiTest\Foo::class);
+            $this->_foo = $container->get(Foo::class);
         }
 
     }

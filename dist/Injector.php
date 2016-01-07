@@ -31,16 +31,54 @@
 namespace Hope\Di
 {
 
+    use Hope\Di\Definition\Closure;
+    use Hope\Di\Definition\Object;
+
     /**
-     * Class Scope
+     * Class Injector
      *
      * @package Hope\Di
      */
-    class Scope
+    class Injector implements IInjector
     {
 
-        const SINGLETON = 'singleton';
-        const PROTOTYPE = 'prototype';
+        /**
+         * @var \Hope\Di\IContainer
+         */
+        protected $_container;
+
+        /**
+         * @inheritdoc
+         */
+        public function setContainer(IContainer $container)
+        {
+            $this->_container = $container;
+            return $this;
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public function getContainer()
+        {
+            return $this->_container;
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public function call(callable $function, array $locals = [])
+        {
+            return $this->getContainer()->build(new Closure('anonymous', $function));
+        }
+
+        /**
+         * @inheritdoc
+         */
+        public function make($class, array $locals = [])
+        {
+            return $this->getContainer()->build(new Object(get_class($class), $class));
+        }
 
     }
 

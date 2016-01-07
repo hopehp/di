@@ -32,7 +32,7 @@ namespace Hope\Di\Resolver
 {
 
     use Hope\Di\IResolver;
-    use Hope\Di\Container;
+    use Hope\Di\IContainer;
     use Hope\Di\IDefinition;
 
     use Hope\Di\Definition\Closure;
@@ -48,15 +48,15 @@ namespace Hope\Di\Resolver
         /**
          * Resolve definition dependencies
          *
-         * @param \Hope\Di\Container   $container
+         * @param \Hope\Di\IContainer  $container
          * @param \Hope\Di\IDefinition $definition
          *
          * @return void
          */
-        public function resolve(Container $container, IDefinition $definition)
+        public function resolve(IContainer $container, IDefinition $definition)
         {
             if ($definition instanceof Closure && $definition->getArguments() === []) {
-                $definition->setArgument(0, $container);
+                $definition->setArgument(0, \Hope\Di\IContainer::class);
             }
         }
 

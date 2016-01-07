@@ -137,6 +137,7 @@ namespace Hope\Di\Builder
                 return $this->resolveValue($container, $name);
             }, $names);
         }
+
     }
 
 }

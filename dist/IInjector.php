@@ -32,15 +32,32 @@ namespace Hope\Di
 {
 
     /**
-     * Class Scope
+     * Interface IInjector
      *
      * @package Hope\Di
      */
-    class Scope
+    interface IInjector extends IContainerAware
     {
 
-        const SINGLETON = 'singleton';
-        const PROTOTYPE = 'prototype';
+        /**
+         * Call user function and inject
+         *
+         * @param callable $function
+         * @param array    $locals [optional]
+         *
+         * @return mixed
+         */
+        public function call(callable $function, array $locals = []);
+
+        /**
+         * Make a class
+         *
+         * @param string $class
+         * @param array  $locals [optional]
+         *
+         * @return mixed
+         */
+        public function make($class, array $locals = []);
 
     }
 

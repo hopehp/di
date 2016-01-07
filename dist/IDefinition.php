@@ -61,6 +61,13 @@ namespace Hope\Di
         public function getValue();
 
         /**
+         * Returns true if definition is isolated
+         *
+         * @return bool
+         */
+        public function getIsolated();
+
+        /**
          * Returns definition reflection
          *
          * @return \Reflection

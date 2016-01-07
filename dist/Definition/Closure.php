@@ -66,6 +66,13 @@ namespace Hope\Di\Definition
         protected $_value;
 
         /**
+         * Definition isolated
+         *
+         * @var boolean
+         */
+        protected $_isolated;
+
+        /**
          * Definition reflection
          *
          * @var \Reflection
@@ -78,7 +85,7 @@ namespace Hope\Di\Definition
          * @param string   $name
          * @param callable $value
          */
-        public function __construct($name, callable $value)
+        public function __construct($name, $value)
         {
             $this->_name = $name;
             $this->_value = $value;
@@ -115,6 +122,14 @@ namespace Hope\Di\Definition
         }
 
         /**
+         * @inheritdoc
+         */
+        public function getIsolated()
+        {
+            return (boolean) $this->_isolated;
+        }
+
+        /**
          * Returns definition reflection
          *
          * @return \Reflection
@@ -125,6 +140,17 @@ namespace Hope\Di\Definition
                 $this->_reflection = new \ReflectionFunction($this->_value);
             }
             return $this->_reflection;
+        }
+
+        /**
+         * Set definition isolated
+         *
+         * @return Closure
+         */
+        public function isolated()
+        {
+            $this->_isolated = true;
+            return $this;
         }
 
         /**

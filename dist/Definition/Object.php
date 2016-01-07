@@ -61,8 +61,7 @@ namespace Hope\Di\Definition
             if (class_exists($value) === false) {
                 throw new \InvalidArgumentException('Object definition value must be a name of existing class');
             }
-            $this->_name = $name;
-            $this->_value = $value;
+            parent::__construct($name, $value);
         }
 
         /**

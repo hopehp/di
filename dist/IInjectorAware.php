@@ -32,15 +32,28 @@ namespace Hope\Di
 {
 
     /**
-     * Class Scope
+     * Interface IInjectorAware
      *
      * @package Hope\Di
      */
-    class Scope
+    interface IInjectorAware
     {
 
-        const SINGLETON = 'singleton';
-        const PROTOTYPE = 'prototype';
+        /**
+         * Set dependency injector
+         *
+         * @param \Hope\Di\IInjector $injector
+         *
+         * @return static
+         */
+        public function setInjector(IInjector $injector);
+
+        /**
+         * Returns injector
+         *
+         * @return \Hope\Di\IInjector
+         */
+        public function getInjector();
 
     }
 

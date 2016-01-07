@@ -1,6 +1,6 @@
 <?php
 /**
- * Hope - PHP 5.6 framework
+ * Hope - PHP 7 framework
  *
  * @author      Shvorak Alexey <dr.emerido@gmail.com>
  * @copyright   2011 Shvorak Alexey
@@ -44,11 +44,25 @@ namespace Hope\Di
     {
 
         /**
-         * Container values
+         * Links
          *
          * @var array
          */
-        protected $_items = [];
+        protected $_links = [];
+
+        /**
+         * Instances
+         *
+         * @var array
+         */
+        protected $_values = [];
+
+        /**
+         * Container parent
+         *
+         * @var \Hope\Di\IContainer
+         */
+        protected $_parent;
 
         /**
          * Definition factory
@@ -72,70 +86,52 @@ namespace Hope\Di
         protected $_resolvers;
 
         /**
-         * Instances
-         *
-         * @var array
-         */
-        protected $_instances = [];
-
-        /**
          * Definitions
          *
-         * @var array
+         * @var IDefinition[]
          */
         protected $_definitions = [];
-
 
         /**
          * Instantiate Container
          *
          * @param array             $values  [optional]
-         * @param \Hope\Di\IFactory $factory
+         * @param \Hope\Di\IFactory $factory [optional]
          * @param \Hope\Di\IBuilder $builder [optional]
          */
         public function __construct(array $values = [], IFactory $factory = null, IBuilder $builder = null)
         {
-            if ($factory === null) {
-                $factory = new SimpleFactory();
+            if ($factory) {
+                $this->setFactory($factory);
             }
-            // Register factory
-            $this->setFactory($factory);
-
-            if ($builder === null) {
-                $builder = new SimpleBuilder();
+            if ($builder) {
+                $this->setBuilder($builder);
             }
-            // Register builder
-            $this->setBuilder($builder);
 
             // Register simple resolver
             $this->setResolver(new SimpleResolver());
 
-            $this->add('container', $this);
-            $this->add('Hope\Di\Container', $this);
-            $this->add('Hope\Di\IContainer', $this);
+            $this->set(\Hope\Di\IContainer::class, $this);
         }
 
         /**
          * Register value
          *
-         * @param $name
+         * @param string $name
          * @param $value
          *
-         * @return IDefinition|Definition\Object|Definition\Closure
+         * @return void
          */
-        public function add($name, $value = null)
+        public function set($name, $value)
         {
-            if ($value === null) {
-                $value = $name;
+            if (false === is_string($name)) {
+                throw new \InvalidArgumentException(sprintf('Name argument must be a string %s given', gettype($name)));
+            }
+            if (array_key_exists($name, $this->_values)) {
+                throw new \RuntimeException(sprintf('Key %s already defined in container', $name));
             }
 
-            if (is_object($value)) {
-                $this->_instances[$name] = $value;
-                return;
-            } else {
-                return $this->_definitions[$name] = $this->getFactory()->define($this, $name, $value);
-            }
-            throw new \InvalidArgumentException('Can\'t add value to container');
+            $this->_values[$name] = $value;
         }
 
         /**
@@ -150,41 +146,149 @@ namespace Hope\Di
          */
         public function get($name, $throw = true)
         {
-            if (is_string($name) && array_key_exists($name, $this->_instances)) {
-                return $this->_instances[$name];
+            if ($name instanceof IDefinition) {
+                $name = $name->getName();
             }
 
-            $definition = $this->getDefinition($name);
-            $instance = $this->build($definition);
-
-            if ($definition->getScope() === Scope::SINGLETON) {
-                $this->_instances[$name] = $instance;
+            if (is_string($name) && array_key_exists($name, $this->_values)) {
+                return $this->_values[$name];
             }
 
-            return $instance;
+            if (is_string($name) && array_key_exists($name, $this->_definitions)) {
+
+                $definition = $this->_definitions[$name];
+
+                if ($definition->getIsolated() && false === $this->isolated()) {
+                    throw new \RuntimeException('Can\'t create isolated definition in not isolated container');
+                }
+
+                // Build value
+                $value = $this->build($definition);
+
+                // Check definition
+                if ($definition->getScope() === Scope::SINGLETON) {
+                    $this->_values[$name] = $value;
+                }
+
+                return $value;
+
+            } else if ($this->isolated()) {
+                return $this->parent()->get($name, $throw);
+            } else if (is_string($name)) {
+                // Auto wiring
+                if (class_exists($name)) {
+                    $this->define($name);
+                } else if (interface_exists($name, true)) {
+                    $class = null;
+                    foreach (get_declared_classes() as $klass) {
+                        if (in_array($name, class_implements($klass, true))) {
+                            $class = $klass;
+                            break;
+                        }
+                    }
+                    if ($class) {
+                        $this->define($name, $class);
+                    } else {
+                        throw new \RuntimeException(sprintf('Can\'t find %s interface implementations', $name));
+                    }
+                }
+                // TODO: Recursion. Be careful
+                return $this->get($name);
+            }
+            if ($throw) {
+                throw new \RuntimeException(sprintf('Value %s not found in container', $name));
+            }
+            return false;
         }
 
+        /**
+         * Returns `true` if value is registered
+         *
+         * @param string $name
+         *
+         * @return bool
+         */
         public function has($name)
         {
-            return is_string($name) && (array_key_exists($name, $this->_instances) || array_key_exists($name, $this->_definitions));
+            return is_string($name) && (
+                array_key_exists($name, $this->_values) || array_key_exists($name, $this->_definitions)
+            );
+        }
+
+        public function invoke(callable $callable, array $locals = [])
+        {
+            $definition = $this->getFactory()->define($this, '', $callable);
+
+            return $this->build($definition);
+        }
+        
+        /**
+         * @inheritdoc
+         * @return \Hope\Di\IDefinition|\Hope\Di\Definition\Closure|\Hope\Di\Definition\Object
+         */
+        public function define($name, $value = null)
+        {
+            if ($value === null) {
+                $value = $name;
+            }
+            return $this->_definitions[$name] = $this->getFactory()->define($this, $name, $value);
+        }
+
+        public function build(IDefinition $definition)
+        {
+            // TODO : Check definition is already resolved
+            // Resolve dependencies
+            if ($this->_resolvers->count()) {
+                foreach ($this->_resolvers as $resolver) {
+                    $resolver->resolve($this, $definition);
+                }
+            }
+            // Build value
+            return $this->getBuilder()->build($this, $definition);
+        }
+
+        /**
+         * Set or get container parent
+         *
+         * @param \Hope\Di\IContainer $container
+         *
+         * @return \Hope\Di\IContainer
+         */
+        public function parent(IContainer $container = null)
+        {
+            if ($container) {
+                $this->_parent = $container;
+            }
+            return $this->_parent;
         }
 
         /**
          * @inheritdoc
          */
-        public function make($class, array $locals)
+        public function isolate()
         {
+            $isolated = new Container([], $this->getFactory(), $this->getBuilder());
+            $isolated->parent($this);
 
+            return $isolated;
         }
 
         /**
          * @inheritdoc
          */
-        public function call(callable $closure, array $locals)
+        public function isolated()
         {
-
+            return $this->_parent !== null;
         }
 
+        /**
+         * @inheritdoc
+         */
+        public function register(IProvider $provider)
+        {
+            $provider->register($this);
+            return $this;
+        }
 
         /**
          * Set definition factory
@@ -206,6 +310,9 @@ namespace Hope\Di
          */
         public function getFactory()
         {
+            if ($this->_factory === null) {
+                $this->_factory = new SimpleFactory();
+            }
             return $this->_factory;
         }
 
@@ -263,34 +370,6 @@ namespace Hope\Di
             }
             $this->_resolvers->attach($resolver);
             return $this;
-        }
-
-        /**
-         * Return definition
-         *
-         * @param string $name
-         *
-         * @return IDefinition
-         */
-        protected function getDefinition($name)
-        {
-            if (array_key_exists($name, $this->_definitions)) {
-                return $this->_definitions[$name];
-            }
-            throw new \InvalidArgumentException("Definition for value {$name} not found in container");
-        }
-
-        /**
-         * @param \Hope\Di\IDefinition $definition
-         *
-         * @return mixed
-         */
-        protected function build(IDefinition $definition)
-        {
-            foreach ($this->_resolvers as $resolver) {
-                $resolver->resolve($this, $definition);
-            }
-            return $this->_builder->build($this, $definition);
         }
 
     }
