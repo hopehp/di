@@ -31,33 +31,40 @@
 namespace Hope\Di
 {
 
-    use Hope\Di\Definition\Closure;
-    use Hope\Di\Definition\Object;
-
     /**
-     * Class Injector
+     * Class ContainerAwareTrait
      *
      * @package Hope\Di
      */
-    class Injector implements IInjector
+    trait ContainerAwareTrait
     {
 
-        use ContainerAwareTrait;
+        /**
+         * @var \Hope\Di\IContainer
+         */
+        protected $_container;
 
         /**
-         * @inheritdoc
+         * Set container instance
+         *
+         * @param \Hope\Di\IContainer $container
+         *
+         * @return $this
          */
-        public function call(callable $function, array $locals = [])
+        public function setContainer(IContainer $container)
         {
-            return $this->getContainer()->build(new Closure('anonymous', $function));
+            $this->_container = $container;
+            return $this;
         }
 
         /**
-         * @inheritdoc
+         * Returns container instance
+         *
+         * @return \Hope\Di\IContainer
          */
-        public function make($class, array $locals = [])
+        public function getContainer()
         {
-            return $this->getContainer()->build(new Object(get_class($class), $class));
+            return $this->_container;
         }
 
     }
